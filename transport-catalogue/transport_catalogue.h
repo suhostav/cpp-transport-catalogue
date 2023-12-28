@@ -24,26 +24,28 @@ struct Stop{
 };
 
 struct Bus {
-    Bus(std::string&& name, vector<Stop*>&& stops):
+    Bus(std::string&& name, vector<const Stop*>&& stops):
         name_(std::move(name)), stops_(std::move(stops))
     {}
     std::string name_;
-    std::vector<Stop*> stops_;
+    std::vector<const Stop*> stops_;
 };
 
 class TransportCatalogue {
 public:
-	void AddStop(Stop&& stop);
-	Stop* GetStop(std::string_view stop_name) const;
-	void AddBus(Bus&& bus);
-	Bus* GetBus(std::string_view bus_name) const;
+	void AddStop(const Stop& stop);
+	const Stop* GetStop(std::string_view stop_name) const;
+	void AddBus(const Bus& bus);
+	const Bus* GetBus(std::string_view bus_name) const;
     std::vector<std::string_view> GetStopBuses(std::string_view stop_name) const;
-    bool ContainStop(string_view stop_name, const Bus&  bus) const;
+    size_t CalcUniqueStops(const Bus& bus) const;
 private:
 	std::deque<Stop> all_stops_;
-	std::unordered_map<std::string_view, Stop*>stops_index_;
+	std::unordered_map<std::string_view, const Stop*>stops_index_;
 	std::deque<Bus> all_buses_;
-	std::unordered_map<std::string_view, Bus*> buses_index_;
+	std::unordered_map<std::string_view, const Bus*> buses_index_;
+
+    bool ContainStop(string_view stop_name, const Bus&  bus) const;
 };
 
 } //ctlg

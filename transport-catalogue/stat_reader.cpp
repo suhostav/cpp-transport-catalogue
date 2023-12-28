@@ -22,12 +22,45 @@ string_view ExtructName(string_view request){
     return {};
 }
 
-size_t CalcUniqueStops(std::vector<Stop*> stops){
-    std::set<std::string_view> uniques;
-    for(auto stop : stops){
-        uniques.insert(stop->name_);
+void PrintBusStat(const TransportCatalogue& tansport_catalogue, std::string_view bus_name,
+                       std::ostream& output){
+    try{
+        auto bus = tansport_catalogue.GetBus(bus_name);
+        size_t n_unique_stops = 0;
+        size_t n_stops = 0;
+        double L = 0.0;
+        n_stops = bus->stops_.size();
+        n_unique_stops = tansport_catalogue.CalcUniqueStops(*bus);
+        for(size_t i = 1; i < bus->stops_.size(); ++i){
+            const Stop *s1 = bus->stops_[i - 1];
+            const Stop *s2 = bus->stops_[i];
+            L += geo::ComputeDistance(s1->coord_, s2->coord_);
+        }
+        output << "Bus " << bus_name << ": "s << n_stops
+            << " stops on route, "s << n_unique_stops << " unique stops, "s << L << " route length\n"s;
+    } catch(std::invalid_argument& e){
+        output << "Bus " << bus_name << ": not found\n";
     }
-    return uniques.size();
+}
+
+void PrintStopStat(const TransportCatalogue& tansport_catalogue, std::string_view stop_name,
+                       std::ostream& output){
+    output << "Stop " << stop_name << ":";
+    try{
+        auto buses = tansport_catalogue.GetStopBuses(stop_name);
+        if(buses.size() == 0){
+            output << " no buses\n";
+        }else {
+            output << " buses";
+            for(auto bus : buses){
+                output << " " << bus;
+            }
+            output << '\n';
+        }
+    }catch(std::invalid_argument& e){
+        output << " not found\n";
+    }
+
 }
 
 void ParseAndPrintStat(const TransportCatalogue& tansport_catalogue, std::string_view request,
@@ -35,39 +68,9 @@ void ParseAndPrintStat(const TransportCatalogue& tansport_catalogue, std::string
     auto fields = Split(request, ' ');
     if(fields[0] == "Bus"){
         string_view bus_name = ExtructName(request);
-        try{
-            auto bus = tansport_catalogue.GetBus(bus_name);
-            size_t n_unique_stops = 0;
-            size_t n_stops = 0;
-            double L = 0.0;
-            n_stops = bus->stops_.size();
-            n_unique_stops = CalcUniqueStops(bus->stops_);
-            for(size_t i = 1; i < bus->stops_.size(); ++i){
-                Stop *s1 = bus->stops_[i-1];
-                Stop *s2 = bus->stops_[i];
-                L += geo::ComputeDistance(s1->coord_, s2->coord_);
-            }
-            output << fields[0] << " " << bus_name << ": "s << n_stops
-                << " stops on route, "s << n_unique_stops << " unique stops, "s << L << " route length\n"s;
-        } catch(std::invalid_argument& e){
-            output << fields[0] << " "s << bus_name << ": not found\n";
-        }
+        PrintBusStat(tansport_catalogue, bus_name, output);
     } else if(fields[0] == "Stop"){
         string_view stop_name = ExtructName(request);
-        output << "Stop " << stop_name << ":";
-        try{
-            auto buses = tansport_catalogue.GetStopBuses(stop_name);
-            if(buses.size() == 0){
-                output << " no buses\n";
-            }else {
-                output << " buses";
-                for(auto bus : buses){
-                    output << " " << bus;
-                }
-                output << '\n';
-            }
-        }catch(std::invalid_argument& e){
-            output << " not found\n";
-        }
+        PrintStopStat(tansport_catalogue, stop_name, output);
     }
 }

@@ -1,16 +1,17 @@
 #include <algorithm>
+#include <set>
 #include <stdexcept>
 #include "transport_catalogue.h"
 #include "input_reader.h"
 
 namespace ctlg{
 
-void TransportCatalogue::AddStop(Stop&& stop){
-    all_stops_.push_back(std::move(stop));
+void TransportCatalogue::AddStop(const Stop& stop){
+    all_stops_.push_back(stop);
     stops_index_.insert({all_stops_.back().name_, &all_stops_.back()});
 }
 
-Stop* TransportCatalogue::GetStop(std::string_view stop_name) const{
+const Stop* TransportCatalogue::GetStop(std::string_view stop_name) const{
     if(stops_index_.count(stop_name) == 0){
         std::string msg{"invalid bus stop name: "};
         msg += stop_name;
@@ -19,13 +20,13 @@ Stop* TransportCatalogue::GetStop(std::string_view stop_name) const{
     return stops_index_.at(stop_name);
 }
 
-void TransportCatalogue::AddBus(Bus&& bus){
+void TransportCatalogue::AddBus(const Bus& bus){
     all_buses_.push_back(bus);
     auto& bus_name = all_buses_.back().name_;
     buses_index_.insert({bus_name, &all_buses_.back()});
 }
 
-Bus* TransportCatalogue::GetBus(std::string_view bus_name) const{
+const Bus* TransportCatalogue::GetBus(std::string_view bus_name) const{
     if(buses_index_.count(bus_name) == 0){
         std::string msg{"invalid bus name: "};
         msg += bus_name;
@@ -41,6 +42,15 @@ bool TransportCatalogue::ContainStop(string_view stop_name, const Bus&  bus) con
         }
     }
     return false;
+}
+
+size_t TransportCatalogue::CalcUniqueStops(const Bus& bus) const{
+    std::set<std::string_view> uniques;
+    for(auto stop : bus.stops_){
+        uniques.insert(stop->name_);
+    }
+    return uniques.size();
+
 }
 
 vector<string_view> TransportCatalogue::GetStopBuses(string_view stop_name) const{
