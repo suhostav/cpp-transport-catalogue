@@ -44,13 +44,18 @@ bool TransportCatalogue::ContainStop(string_view stop_name, const Bus&  bus) con
     return false;
 }
 
-size_t TransportCatalogue::CalcUniqueStops(const Bus& bus) const{
+std::pair<size_t,double> TransportCatalogue::CalcUniqueStopsAndRouteLenght(const Bus& bus) const{
     std::set<std::string_view> uniques;
-    for(auto stop : bus.stops_){
-        uniques.insert(stop->name_);
+    double L = 0.0;
+    for(size_t i = 0; i < bus.stops_.size(); ++i){
+        uniques.insert(bus.stops_[i]->name_);
+        if(i > 0){
+            const Stop *s1 = bus.stops_[i - 1];
+            const Stop *s2 = bus.stops_[i];
+            L += geo::ComputeDistance(s1->coord_, s2->coord_);
+        }
     }
-    return uniques.size();
-
+    return {uniques.size(), L};
 }
 
 vector<string_view> TransportCatalogue::GetStopBuses(string_view stop_name) const{

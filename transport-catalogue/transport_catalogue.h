@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "geo.h"
@@ -38,7 +39,7 @@ public:
 	void AddBus(const Bus& bus);
 	const Bus* GetBus(std::string_view bus_name) const;
     std::vector<std::string_view> GetStopBuses(std::string_view stop_name) const;
-    size_t CalcUniqueStops(const Bus& bus) const;
+    std::pair<size_t,double> CalcUniqueStopsAndRouteLenght(const Bus& bus) const;
 private:
 	std::deque<Stop> all_stops_;
 	std::unordered_map<std::string_view, const Stop*>stops_index_;

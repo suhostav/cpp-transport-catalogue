@@ -22,28 +22,21 @@ string_view ExtructName(string_view request){
     return {};
 }
 
-void PrintBusStat(const TransportCatalogue& tansport_catalogue, std::string_view bus_name,
+void PrintBusStat(const TransportCatalogue& tansport_catalogue, string_view bus_name,
                        std::ostream& output){
     try{
         auto bus = tansport_catalogue.GetBus(bus_name);
-        size_t n_unique_stops = 0;
-        size_t n_stops = 0;
-        double L = 0.0;
-        n_stops = bus->stops_.size();
-        n_unique_stops = tansport_catalogue.CalcUniqueStops(*bus);
-        for(size_t i = 1; i < bus->stops_.size(); ++i){
-            const Stop *s1 = bus->stops_[i - 1];
-            const Stop *s2 = bus->stops_[i];
-            L += geo::ComputeDistance(s1->coord_, s2->coord_);
-        }
+        size_t n_stops = bus->stops_.size();
+        auto [n_unique_stops, L] = tansport_catalogue.CalcUniqueStopsAndRouteLenght(*bus);
         output << "Bus " << bus_name << ": "s << n_stops
-            << " stops on route, "s << n_unique_stops << " unique stops, "s << L << " route length\n"s;
+            << " stops on route, "s << n_unique_stops 
+            << " unique stops, "s << L << " route length\n"s;
     } catch(std::invalid_argument& e){
         output << "Bus " << bus_name << ": not found\n";
     }
 }
 
-void PrintStopStat(const TransportCatalogue& tansport_catalogue, std::string_view stop_name,
+void PrintStopStat(const TransportCatalogue& tansport_catalogue, string_view stop_name,
                        std::ostream& output){
     output << "Stop " << stop_name << ":";
     try{
@@ -63,7 +56,7 @@ void PrintStopStat(const TransportCatalogue& tansport_catalogue, std::string_vie
 
 }
 
-void ParseAndPrintStat(const TransportCatalogue& tansport_catalogue, std::string_view request,
+void ParseAndPrintStat(const TransportCatalogue& tansport_catalogue, string_view request,
                        std::ostream& output) {
     auto fields = Split(request, ' ');
     if(fields[0] == "Bus"){
