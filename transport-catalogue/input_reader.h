@@ -6,7 +6,9 @@
 #include "geo.h"
 #include "transport_catalogue.h"
 
-namespace input{
+using std::vector, std::string, std::string_view;
+
+namespace ctlg::input {
 
 struct CommandDescription {
     // Определяет, задана ли команда (поле command непустое)
@@ -18,9 +20,11 @@ struct CommandDescription {
         return !operator bool();
     }
 
-    std::string command;      // Название команды
-    std::string id;           // id маршрута или остановки
-    std::string description;  // Параметры команды
+    string command;      // Название команды
+    string id;           // id маршрута или остановки
+    geo::Coordinates coords;    //соординаты, если command == "Stop"
+    string description;  // Параметры команды
+    vector<std::string_view> fields;    //прочие параметры, разделенные запятыми
 };
 
 class InputReader {
@@ -28,7 +32,7 @@ public:
     /**
      * Парсит строку в структуру CommandDescription и сохраняет результат в commands_
      */
-    void ParseLine(std::string_view line);
+    void ParseLine(string_view line);
 
     /**
      * Наполняет данными транспортный справочник, используя команды из commands_
@@ -36,7 +40,14 @@ public:
     void ApplyCommands(ctlg::TransportCatalogue& catalogue) const;
 
 private:
-    std::vector<CommandDescription> commands_;
+    vector<CommandDescription> commands_;
+
+    void SetDistances(CommandDescription& command, [[maybe_unused]] TransportCatalogue& catalogue) const;
 };
 
-} //input
+}   //ctlg::input
+
+string_view Trim(string_view string);
+vector<string_view> Split(string_view string, char delim);
+size_t GetMeters(string_view data);
+string_view GetWord(string_view line, string_view& word);

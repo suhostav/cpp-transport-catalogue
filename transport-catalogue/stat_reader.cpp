@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <set>
 #include <string>
 #include "stat_reader.h"
@@ -28,9 +29,13 @@ void PrintBusStat(const TransportCatalogue& tansport_catalogue, string_view bus_
         auto bus = tansport_catalogue.GetBus(bus_name);
         size_t n_stops = bus->stops_.size();
         auto [n_unique_stops, L] = tansport_catalogue.CalcUniqueStopsAndRouteLenght(*bus);
+        size_t dist = tansport_catalogue.GetRouteLenght(bus);
+        double curvature = static_cast<double>(dist) / L;
         output << "Bus " << bus_name << ": "s << n_stops
             << " stops on route, "s << n_unique_stops 
-            << " unique stops, "s << L << " route length\n"s;
+            << " unique stops, "s 
+            << dist << " route length, "s
+            << curvature << " curvature\n"s;
     } catch(std::invalid_argument& e){
         output << "Bus " << bus_name << ": not found\n";
     }

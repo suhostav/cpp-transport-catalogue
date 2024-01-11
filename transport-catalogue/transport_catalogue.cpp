@@ -6,12 +6,12 @@
 
 namespace ctlg{
 
-void TransportCatalogue::AddStop(const Stop& stop){
-    all_stops_.push_back(stop);
+void TransportCatalogue::AddStop(Stop&& stop){
+    all_stops_.push_back(std::move(stop));
     stops_index_.insert({all_stops_.back().name_, &all_stops_.back()});
 }
 
-const Stop* TransportCatalogue::GetStop(std::string_view stop_name) const{
+Stop* TransportCatalogue::GetStop(std::string_view stop_name) const{
     if(stops_index_.count(stop_name) == 0){
         std::string msg{"invalid bus stop name: "};
         msg += stop_name;
@@ -20,13 +20,13 @@ const Stop* TransportCatalogue::GetStop(std::string_view stop_name) const{
     return stops_index_.at(stop_name);
 }
 
-void TransportCatalogue::AddBus(const Bus& bus){
-    all_buses_.push_back(bus);
+void TransportCatalogue::AddBus(Bus&& bus){
+    all_buses_.push_back(std::move(bus));
     auto& bus_name = all_buses_.back().name_;
     buses_index_.insert({bus_name, &all_buses_.back()});
 }
 
-const Bus* TransportCatalogue::GetBus(std::string_view bus_name) const{
+Bus* TransportCatalogue::GetBus(std::string_view bus_name) const{
     if(buses_index_.count(bus_name) == 0){
         std::string msg{"invalid bus name: "};
         msg += bus_name;
@@ -72,6 +72,32 @@ vector<string_view> TransportCatalogue::GetStopBuses(string_view stop_name) cons
     }
     std::sort(buses.begin(), buses.end());
     return buses;
+}
+
+void TransportCatalogue::SetDistance(string_view stop_from_name, string_view stop_to_name, size_t dist){
+    Stop* stop_from{GetStop(stop_from_name)};
+    Stop* stop_to{GetStop(stop_to_name)};
+    if(!stop_from || !stop_to){
+        throw std::runtime_error("TransportCatalogue::SetDistance: Unknown stop name.");
+    }
+    StopPair key{stop_from, stop_to};
+    distances_[key] = dist;
+}
+
+size_t TransportCatalogue::GetRouteLenght(const Bus* bus) const{
+    size_t L = 0;
+    for(size_t i = 0; i < bus->stops_.size() - 1; ++i){
+        StopPair key{bus->stops_[i], bus->stops_[i+1]};
+        if(distances_.count(key)){
+            L += distances_.at(key);
+        } else {
+            StopPair back{bus->stops_[i+1], bus->stops_[i]};
+                    if(distances_.count(back)){
+            L += distances_.at(back);
+        }
+        }
+    }
+    return L;
 }
 
 } //ctlg

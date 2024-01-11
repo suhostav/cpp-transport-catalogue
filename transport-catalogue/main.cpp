@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 
 #include "input_reader.h"
@@ -31,4 +32,5 @@ int main() {
         getline(cin, line);
         ParseAndPrintStat(catalogue, line, cout);
     }
+    return 0;
 }
