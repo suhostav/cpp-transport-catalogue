@@ -6,7 +6,7 @@
 
 namespace ctlg{
 
-void TransportCatalogue::AddStop(Stop&& stop){
+void TransportCatalogue::AddStop(const Stop& stop){
     all_stops_.push_back(std::move(stop));
     stops_index_.insert({all_stops_.back().name_, &all_stops_.back()});
 }
@@ -20,7 +20,7 @@ Stop* TransportCatalogue::GetStop(std::string_view stop_name) const{
     return stops_index_.at(stop_name);
 }
 
-void TransportCatalogue::AddBus(Bus&& bus){
+void TransportCatalogue::AddBus(const Bus& bus){
     all_buses_.push_back(std::move(bus));
     auto& bus_name = all_buses_.back().name_;
     buses_index_.insert({bus_name, &all_buses_.back()});
@@ -84,20 +84,26 @@ void TransportCatalogue::SetDistance(string_view stop_from_name, string_view sto
     distances_[key] = dist;
 }
 
-size_t TransportCatalogue::GetRouteLenght(const Bus* bus) const{
+size_t TransportCatalogue::GetRouteLenght(const Bus& bus) const{
     size_t L = 0;
-    for(size_t i = 0; i < bus->stops_.size() - 1; ++i){
-        StopPair key{bus->stops_[i], bus->stops_[i+1]};
+    for(size_t i = 0; i < bus.stops_.size() - 1; ++i){
+        StopPair key{bus.stops_[i], bus.stops_[i+1]};
         if(distances_.count(key)){
             L += distances_.at(key);
         } else {
-            StopPair back{bus->stops_[i+1], bus->stops_[i]};
-                    if(distances_.count(back)){
-            L += distances_.at(back);
-        }
+            StopPair back{bus.stops_[i+1], bus.stops_[i]};
+            if(distances_.count(back)){
+                L += distances_.at(back);
+            }
         }
     }
     return L;
+}
+
+RouteInfo TransportCatalogue::GetRouteInfo(const Bus& bus) const{
+    auto [unique, length_geo] = CalcUniqueStopsAndRouteLenght(bus);
+    size_t length = GetRouteLenght(bus);
+    return {bus.stops_.size(), unique, length_geo, length};
 }
 
 } //ctlg

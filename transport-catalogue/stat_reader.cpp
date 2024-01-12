@@ -27,9 +27,9 @@ void PrintBusStat(const TransportCatalogue& tansport_catalogue, string_view bus_
                        std::ostream& output){
     try{
         auto bus = tansport_catalogue.GetBus(bus_name);
-        size_t n_stops = bus->stops_.size();
-        auto [n_unique_stops, L] = tansport_catalogue.CalcUniqueStopsAndRouteLenght(*bus);
-        size_t dist = tansport_catalogue.GetRouteLenght(bus);
+        auto [n_stops, n_unique_stops, L, dist] = tansport_catalogue.GetRouteInfo(*bus);
+        // auto [n_unique_stops, L] = tansport_catalogue.CalcUniqueStopsAndRouteLenght(*bus);
+        // size_t dist = tansport_catalogue.GetRouteLenght(bus);
         double curvature = static_cast<double>(dist) / L;
         output << "Bus " << bus_name << ": "s << n_stops
             << " stops on route, "s << n_unique_stops 
