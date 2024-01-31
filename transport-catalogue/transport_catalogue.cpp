@@ -2,7 +2,6 @@
 #include <set>
 #include <stdexcept>
 #include "transport_catalogue.h"
-#include "input_reader.h"
 
 namespace ctlg{
 
@@ -13,9 +12,7 @@ void TransportCatalogue::AddStop(const Stop& stop){
 
 Stop* TransportCatalogue::GetStop(std::string_view stop_name) const{
     if(stops_index_.count(stop_name) == 0){
-        std::string msg{"invalid bus stop name: "};
-        msg += stop_name;
-        throw std::invalid_argument(msg);
+        return nullptr;
     }
     return stops_index_.at(stop_name);
 }
@@ -28,9 +25,7 @@ void TransportCatalogue::AddBus(const Bus& bus){
 
 Bus* TransportCatalogue::GetBus(std::string_view bus_name) const{
     if(buses_index_.count(bus_name) == 0){
-        std::string msg{"invalid bus name: "};
-        msg += bus_name;
-        throw std::invalid_argument(msg);
+        return nullptr;
     }
     return buses_index_.at(bus_name);
 }
@@ -100,10 +95,23 @@ size_t TransportCatalogue::GetRouteLenght(const Bus& bus) const{
     return L;
 }
 
-RouteInfo TransportCatalogue::GetRouteInfo(const Bus& bus) const{
+BusStat TransportCatalogue::GetBusStat(const Bus& bus) const{
     auto [unique, length_geo] = CalcUniqueStopsAndRouteLenght(bus);
     size_t length = GetRouteLenght(bus);
-    return {bus.stops_.size(), unique, length_geo, length};
+    return {bus.name_, bus.stops_.size(), unique, length_geo, length};
+}
+
+StopStat TransportCatalogue::GetStopStat(const Stop& stop) const{
+    return {stop.name_, GetStopBuses(stop.name_)};
+}
+
+vector<string_view>  TransportCatalogue::GetBuses() const {
+    vector<string_view> bus_names;
+    for(auto bus : buses_index_){
+        bus_names.push_back(bus.first);
+    }
+    std::sort(bus_names.begin(), bus_names.end());
+    return bus_names;
 }
 
 } //ctlg

@@ -7,37 +7,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include "geo.h"
+#include "domain.h"
+// #include "geo.h"
 
 
 namespace ctlg{
 
 using std::string, std::string_view, std::vector;
-
-struct Stop{
-
-    Stop(string name, geo::Coordinates coord): 
-        name_(std::move(name)),
-        coord_(coord)
-    {  }
-    string name_;
-    geo::Coordinates coord_;
-};
-
-struct Bus {
-    Bus(string&& name, vector<Stop*>&& stops):
-        name_(std::move(name)), stops_(std::move(stops))
-    {}
-    string name_;
-    vector<Stop*> stops_;
-};
-
-struct RouteInfo{
-    size_t stops;
-    size_t unique_stops;
-    double lenght_geo;
-    size_t lenght;
-};
 
 class TransportCatalogue {
 public:
@@ -50,7 +26,10 @@ public:
     vector<string_view> GetStopBuses(string_view stop_name) const;
     bool ContainStop(string_view stop_name, const Bus&  bus) const;
     void SetDistance(string_view stop_from_name, string_view stop_to_name, size_t dist);
-    RouteInfo GetRouteInfo(const Bus& bus) const;
+    // RouteInfo GetRouteInfo(const Bus& bus) const;
+    BusStat GetBusStat(const Bus& bus) const;
+    StopStat GetStopStat(const Stop& stop) const;
+    vector<string_view> GetBuses() const;
 private:
 
     struct PairPointerHasher{
