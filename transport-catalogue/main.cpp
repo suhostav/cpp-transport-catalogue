@@ -23,8 +23,6 @@ int main() {
     MapRenderer rend{jreader.GetRendererSettings()};
     auto routes = handler.GetRoutes();
     rend.SetRoutes(routes);
-    svg::Document doc = rend.RenderMap();
-    doc.Render(std::cout);
     cout << jreader.GetStats();
     return 0;
 }

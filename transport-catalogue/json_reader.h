@@ -20,9 +20,9 @@ namespace ctlg::jreader {
         bool IsStopRequest(const json::Dict& req) const;
         bool IsBusRequest(const json::Dict& req) const;
         bool IsMapRequest(const json::Dict& req) const;
-        std::ostream& GetStopStat(const json::Dict& req, std::ostream& out) const;
-        std::ostream& GetBusStat(const json::Dict& req, std::ostream& out) const;
-        std::ostream& GetMapStat(const json::Dict& req, std::ostream& out) const;
+        json::Node GetStopStat(const json::Dict& req) const;
+        json::Node GetBusStat(const json::Dict& req) const;
+        json::Node GetMapStat(const json::Dict& req) const;
         std::string GetStats() const;
         RenderSettings GetRendererSettings() const;
     private:

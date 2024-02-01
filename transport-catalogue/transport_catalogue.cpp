@@ -69,7 +69,7 @@ vector<string_view> TransportCatalogue::GetStopBuses(string_view stop_name) cons
     return buses;
 }
 
-void TransportCatalogue::SetDistance(string_view stop_from_name, string_view stop_to_name, size_t dist){
+void TransportCatalogue::SetDistance(string_view stop_from_name, string_view stop_to_name, int dist){
     Stop* stop_from{GetStop(stop_from_name)};
     Stop* stop_to{GetStop(stop_to_name)};
     if(!stop_from || !stop_to){
@@ -79,8 +79,8 @@ void TransportCatalogue::SetDistance(string_view stop_from_name, string_view sto
     distances_[key] = dist;
 }
 
-size_t TransportCatalogue::GetRouteLenght(const Bus& bus) const{
-    size_t L = 0;
+int TransportCatalogue::GetRouteLenght(const Bus& bus) const{
+    int L = 0;
     for(size_t i = 0; i < bus.stops_.size() - 1; ++i){
         StopPair key{bus.stops_[i], bus.stops_[i+1]};
         if(distances_.count(key)){
@@ -97,7 +97,7 @@ size_t TransportCatalogue::GetRouteLenght(const Bus& bus) const{
 
 BusStat TransportCatalogue::GetBusStat(const Bus& bus) const{
     auto [unique, length_geo] = CalcUniqueStopsAndRouteLenght(bus);
-    size_t length = GetRouteLenght(bus);
+    int length = GetRouteLenght(bus);
     return {bus.name_, bus.stops_.size(), unique, length_geo, length};
 }
 

@@ -23,7 +23,7 @@ public:
 	Stop* GetStop(string_view stop_name) const;
 	void AddBus(const Bus& bus);
 	Bus* GetBus(string_view bus_name) const;
-    void SetDistance(string_view stop_from_name, string_view stop_to_name, size_t dist);
+    void SetDistance(string_view stop_from_name, string_view stop_to_name, int dist);
     BusStat GetBusStat(const Bus& bus) const;
     StopStat GetStopStat(const Stop& stop) const;
 

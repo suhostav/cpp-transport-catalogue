@@ -39,27 +39,6 @@ size_t GetMeters(string_view data){
     return std::stoull(std::string(data));
 }
 
-string AddEscapes(std::istream& input){
-    std::stringstream out;
-    auto it = std::istreambuf_iterator<char>(input);
-    auto end = std::istreambuf_iterator<char>();
-    while(it != end){
-        const char ch = *it;
-        if(ch == '\\'){
-            out << '\\' << '\\';
-        } else if(ch == '\"'){
-            out << '\\' << '\"';
-        } else if(ch == '\n'){
-            out << '\\' << 'n';
-        } else if(ch == '\r'){
-            out << '\\' << 'r';
-        } else {
-            out << ch;
-        }
-        ++it;
-    }
-    return out.str();
-}
 
 bool Bus::IsRound(){
     return last_stop_ == nullptr;

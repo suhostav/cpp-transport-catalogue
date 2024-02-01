@@ -20,7 +20,7 @@ Bus* RequestHandler::GetBus(string_view bus_name) const{
     return db_.GetBus(bus_name);
 }
 
-void RequestHandler::SetDistance(string_view stop_from_name, string_view stop_to_name, size_t dist) {
+void RequestHandler::SetDistance(string_view stop_from_name, string_view stop_to_name, int dist) {
     db_.SetDistance(stop_from_name, stop_to_name, dist);
 }
 

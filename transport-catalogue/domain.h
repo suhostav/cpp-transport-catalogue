@@ -40,10 +40,9 @@ struct BusStat {
     size_t stops;
     size_t unique_stops;
     double lenght_geo;
-    size_t lenght;
+    int lenght;
 };
 
 std::string_view Trim(string_view string);
 vector<string_view> Split(string_view string, char delim);
 size_t GetMeters(string_view data);
-string AddEscapes(std::istream& input);
