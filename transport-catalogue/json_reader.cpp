@@ -15,10 +15,10 @@ JsonReader::JsonReader(RequestHandler& handler, std::istream& input):
 
 json::Node JsonReader::GetUpLevelNode(const string& key_name) const {
     auto root = doc_.GetRoot();
-    if(!root.IsMap()){
+    if(!root.IsDict()){
         return {};
     }
-    auto requests = root.AsMap();
+    auto requests = root.AsDict();
     if(requests.count(string{key_name})) {
         return requests.at(key_name);
     }
@@ -33,21 +33,21 @@ void JsonReader::ApplyCommands(){
     auto commands = base_requests.AsArray();
     //add all Stops
     for(auto command : commands){
-        auto req = command.AsMap();
+        auto req = command.AsDict();
         if(IsStopRequest(req)){
             AddStop(req);
         }
     }
     // add stops distances
     for(auto command : commands){
-        auto req = command.AsMap();
+        auto req = command.AsDict();
         if(IsStopRequest(req)){
             AddStopDistances(req);
         }
     }
     //add buses
     for(auto command : commands){
-        auto req = command.AsMap();
+        auto req = command.AsDict();
         if(IsBusRequest(req)){
             AddBus(req);
         }
@@ -56,25 +56,13 @@ void JsonReader::ApplyCommands(){
 
 bool JsonReader::IsStopRequest(const json::Dict& req) const{
     return req.at("type"s).AsString() ==  "Stop"s;
-    // if(req.at("type"s).AsString() ==  "Stop"s){
-    //     return true;
-    // }
-    // return false;
 }
 bool JsonReader::IsBusRequest(const json::Dict& req) const{
     return req.at("type"s).AsString() ==  "Bus"s;
-    // if(req.at("type"s).AsString() ==  "Bus"s){
-    //     return true;
-    // }
-    // return false;
 }
 
 bool JsonReader::IsMapRequest(const json::Dict& req) const {
     return req.at("type"s).AsString() ==  "Map"s;
-    // if(req.at("type"s).AsString() ==  "Map"s){
-    //     return true;
-    // }
-    // return false;
 }
 
 
@@ -84,7 +72,7 @@ void JsonReader::AddStop(const json::Dict& stop){
 }
 
 void JsonReader::AddStopDistances(const json::Dict& stop){
-    auto dists = stop.at("road_distances").AsMap();
+    auto dists = stop.at("road_distances").AsDict();
     for(auto [stop_to, dist] : dists){
         handler_.SetDistance(stop.at("name").AsString(), stop_to, dist.AsInt());
     }
@@ -117,38 +105,45 @@ json::Node JsonReader::GetStopStat(const json::Dict& req) const {
     auto id_node = req.at("id").AsInt();
     auto stop_name = req.at("name").AsString();
     StopPtr stop = handler_.GetStop(stop_name);
-    json::Dict answer;
-    answer["request_id"s] = id_node;
     if(!stop){
-        answer["error_message"s] = "not found"s;
+        return json::Builder()
+            .StartDict()
+                .Key("request_id"s).Value(id_node)
+                .Key("error_message"s).Value("not found"s)
+            .EndDict().Build();
     } else {
         StopStat stat = handler_.GetStopStat(*stop);
         json::Array buses;
         for(auto bus_name : stat.buses){
             buses.push_back(string{bus_name});
         }
-        answer["buses"s] = buses;
+        return json::Builder().StartDict()
+            .Key("request_id"s).Value(id_node)
+            .Key("buses"s).Value(buses)
+            .EndDict().Build();
     }
-    return {answer};
 }
 
 json::Node JsonReader::GetBusStat(const json::Dict& req) const {
     auto id_node = req.at("id").AsInt();
     auto bus_name = req.at("name").AsString();
     BusPtr bus = handler_.GetBus(bus_name);
-    json::Dict answer;
-    answer["request_id"s] = id_node;
     if(!bus){
-        answer["error_message"s] = "not found"s;
+        return json::Builder().StartDict()
+            .Key("request_id"s).Value(id_node)
+            .Key("error_message"s).Value("not found"s)
+            .EndDict().Build();
     } else {
         BusStat stat = handler_.GetBusStat(*bus);
         double curvature = static_cast<double>(stat.lenght) / stat.lenght_geo;
-        answer["stop_count"] = (int)stat.stops;
-        answer["unique_stop_count"] = (int)stat.unique_stops;
-        answer["route_length"] = stat.lenght;
-        answer["curvature"] = curvature;
+        return json::Builder().StartDict()
+            .Key("request_id"s).Value(id_node)
+            .Key("stop_count"s).Value((int)stat.stops)
+            .Key("unique_stop_count"s).Value((int)stat.unique_stops)
+            .Key("route_length"s).Value(stat.lenght)
+            .Key("curvature"s).Value(curvature)
+            .EndDict().Build();
     }
-    return {answer};
 }
 
 json::Node JsonReader::GetMapStat(const json::Dict& req) const {
@@ -161,12 +156,11 @@ json::Node JsonReader::GetMapStat(const json::Dict& req) const {
     renderer.SetRoutes(routes);
     svg::Document doc = renderer.RenderMap();
     doc.Render(ss);
-    // auto map_str = AddEscapes(ss);
-    json::Dict answer;
-    answer["request_id"s] = id;
-    answer["map"s] = ss.str();
-
-    return {answer};
+    return json::Builder()
+        .StartDict()
+            .Key("request_id"s).Value(id)
+            .Key("map"s).Value(ss.str())
+        .EndDict().Build();
 }
 
 std::string JsonReader::GetStats() const{
@@ -178,12 +172,12 @@ std::string JsonReader::GetStats() const{
     }
     auto reqs = stat_requests.AsArray();
     for(auto req : reqs){
-        if(IsBusRequest(req.AsMap())){
-            answers.push_back(GetBusStat(req.AsMap()));
-        } else if(IsStopRequest(req.AsMap())){
-            answers.push_back(GetStopStat(req.AsMap()));
-        } else if(IsMapRequest(req.AsMap())){
-            answers.push_back(GetMapStat(req.AsMap()));
+        if(IsBusRequest(req.AsDict())){
+            answers.push_back(GetBusStat(req.AsDict()));
+        } else if(IsStopRequest(req.AsDict())){
+            answers.push_back(GetStopStat(req.AsDict()));
+        } else if(IsMapRequest(req.AsDict())){
+            answers.push_back(GetMapStat(req.AsDict()));
         } else {
             throw std::runtime_error("JsonReader::GetStats: Unknown stat request type. "s);
         }
@@ -199,7 +193,7 @@ RenderSettings JsonReader::GetRendererSettings() const{
     if(render_settings == json::Node{}){
         return {};
     }
-    auto sn = render_settings.AsMap();
+    auto sn = render_settings.AsDict();
     sett.width = sn.at("width"s).AsDouble();
     sett.height = sn.at("height").AsDouble();
     sett.padding = sn.at("padding"s).AsDouble();
