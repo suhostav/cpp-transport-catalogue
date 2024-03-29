@@ -104,32 +104,34 @@ svg::Document& MapRenderer::RenderBusNames(SphereProjector& proj, svg::Document&
         svg_doc.Add(first_underline);
         svg_doc.Add(fist_label);
 
-        Stop *last_stop = bus->GetLastStop();
-        if(last_stop && last_stop != bus->stops_.front()){
-            svg::Text last_underline;
-            last_underline.SetData(string(bus_name))
-            .SetFillColor(settings_.underlayer_color)
-            .SetStrokeColor(settings_.underlayer_color)
-            .SetStrokeWidth(settings_.underlayer_width)
-            .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
-            .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND)
-            .SetPosition(proj(last_stop->coord_))
-            .SetOffset(settings_.bus_label_offset)
-            .SetFontSize(settings_.bus_label_font_size)
-            .SetFontFamily("Verdana"s)
-            .SetFontWeight("bold"s);
+        if(!bus->IsRound()){
+            Stop *last_stop = bus->GetLastStop();
+            if(last_stop != bus->stops_[0]){
+                svg::Text last_underline;
+                last_underline.SetData(string(bus_name))
+                .SetFillColor(settings_.underlayer_color)
+                .SetStrokeColor(settings_.underlayer_color)
+                .SetStrokeWidth(settings_.underlayer_width)
+                .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
+                .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND)
+                .SetPosition(proj(last_stop->coord_))
+                .SetOffset(settings_.bus_label_offset)
+                .SetFontSize(settings_.bus_label_font_size)
+                .SetFontFamily("Verdana"s)
+                .SetFontWeight("bold"s);
 
-            svg::Text last_label;
-            last_label.SetData(string(bus_name))
-            .SetFillColor(RouteNumerToColor(route_num))
-            .SetPosition(proj(last_stop->coord_))
-            .SetOffset(settings_.bus_label_offset)
-            .SetFontSize(settings_.bus_label_font_size)
-            .SetFontFamily("Verdana"s)
-            .SetFontWeight("bold"s);
+                svg::Text last_label;
+                last_label.SetData(string(bus_name))
+                .SetFillColor(RouteNumerToColor(route_num))
+                .SetPosition(proj(last_stop->coord_))
+                .SetOffset(settings_.bus_label_offset)
+                .SetFontSize(settings_.bus_label_font_size)
+                .SetFontFamily("Verdana"s)
+                .SetFontWeight("bold"s);
 
-            svg_doc.Add(last_underline);
-            svg_doc.Add(last_label);
+                svg_doc.Add(last_underline);
+                svg_doc.Add(last_label);
+            }
         }
         ++route_num;
     }

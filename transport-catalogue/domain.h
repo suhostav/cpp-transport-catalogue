@@ -4,8 +4,10 @@
 #include <vector>
 
 #include "geo.h"
+#include "graph.h"
 
 using std::string, std::vector, std::string_view;
+using namespace std::literals;
 
 struct Stop{
     Stop(string name, geo::Coordinates&& coord): 
@@ -17,14 +19,17 @@ struct Stop{
 };
 
 struct Bus {
-    Bus(string&& name, vector<Stop*>&& stops, Stop* last_stop = nullptr):
-        name_(std::move(name)), stops_(std::move(stops)), last_stop_(last_stop)
+    Bus(string&& name, vector<Stop*>&& stops, bool is_round):
+        name_(std::move(name)), stops_(std::move(stops)), is_round_(is_round)
     {}
     string name_;
     vector<Stop*> stops_;
-    Stop* last_stop_;
-    bool IsRound();
-    Stop* GetLastStop();
+    bool is_round_;
+    bool IsRound() const;
+    size_t GetLastStopIndex() const;
+    Stop* GetLastStop() const;
+    bool IsEndStop(Stop* stop) const;
+    size_t GetStopIndex(Stop* stop) const;
 };
 
 using StopPtr = Stop*;
@@ -41,6 +46,17 @@ struct BusStat {
     size_t unique_stops;
     double lenght_geo;
     int lenght;
+};
+
+struct RoutingSettings{
+    unsigned int bus_wait_time = 0;
+    double bus_velocity = 0.0;
+};
+
+struct VertexData{
+    size_t index;
+    const Stop* stop = nullptr;
+    const Bus* bus = nullptr;
 };
 
 std::string_view Trim(string_view string);

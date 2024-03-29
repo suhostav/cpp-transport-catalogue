@@ -79,6 +79,16 @@ void TransportCatalogue::SetDistance(string_view stop_from_name, string_view sto
     distances_[key] = dist;
 }
 
+int  TransportCatalogue::GetDistance(Stop* from, Stop* to){
+    if(distances_.count({from,to}) > 0){
+        return distances_.at({from,to});
+    }
+    if(distances_.count({to,from}) > 0){
+        return distances_.at({to,from});
+    }
+    return -1;
+}
+
 int TransportCatalogue::GetRouteLenght(const Bus& bus) const{
     int L = 0;
     for(size_t i = 0; i < bus.stops_.size() - 1; ++i){
@@ -107,11 +117,40 @@ StopStat TransportCatalogue::GetStopStat(const Stop& stop) const{
 
 vector<string_view>  TransportCatalogue::GetBuses() const {
     vector<string_view> bus_names;
-    for(auto bus : buses_index_){
+    for(auto& bus : buses_index_){
         bus_names.push_back(bus.first);
     }
     std::sort(bus_names.begin(), bus_names.end());
     return bus_names;
 }
+
+vector<string_view> TransportCatalogue::GetBusesUnordered() const {
+    vector<string_view> bus_names;
+    for(auto& bus : buses_index_){
+        bus_names.push_back(bus.first);
+    }
+    return bus_names;
+}
+
+int TransportCatalogue::GetDistance(Stop* from, Stop* to) const{
+    if(distances_.count({from, to})){
+        return distances_.at({from, to});
+    }
+    if(distances_.count({to,from})){
+        return distances_.at({to,from});
+    }
+    if(to == from){
+        return 0.0;
+    }
+    throw std::runtime_error("TransportCatalogue::GetDistance: no distance.");
+}
+
+
+// GraphInfo TransportCatalogue::CreateGraph(const RoutingSettings& rs, string_view from, string_view to){
+//     GraphInfo gi;
+
+
+//     return gi;
+// }
 
 } //ctlg

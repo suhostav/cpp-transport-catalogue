@@ -1,5 +1,6 @@
 #include <algorithm>
 # include "request_handler.h"
+#include "transport_router.h"
 
 RequestHandler::RequestHandler(TransportCatalogue& db):
     db_(db) {}
@@ -41,4 +42,3 @@ vector<std::pair<string_view, Bus *>> RequestHandler::GetRoutes() {
     }
     return routes;
 }
-

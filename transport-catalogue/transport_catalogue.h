@@ -1,6 +1,7 @@
 #pragma once
 #include <cassert>
 #include <deque>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -8,6 +9,7 @@
 #include <vector>
 
 #include "domain.h"
+#include "graph.h"
 // #include "geo.h"
 
 
@@ -26,10 +28,17 @@ public:
     vector<string_view> GetStopBuses(string_view stop_name) const;
     bool ContainStop(string_view stop_name, const Bus&  bus) const;
     void SetDistance(string_view stop_from_name, string_view stop_to_name, int dist);
+    int  GetDistance(Stop* from, Stop* to);
     // RouteInfo GetRouteInfo(const Bus& bus) const;
     BusStat GetBusStat(const Bus& bus) const;
     StopStat GetStopStat(const Stop& stop) const;
     vector<string_view> GetBuses() const;
+    vector<string_view> GetBusesUnordered() const;
+    const std::deque<Stop>& GetAllStops() const {return all_stops_;}
+    inline const std::deque<Bus>& GetAllBuses() const {return all_buses_;}
+    int GetDistance(Stop* from, Stop* to) const;
+    void CreateGraph( const RoutingSettings& rs);
+    // GraphInfo CreateGraph(const RoutingSettings& rs, string_view from, string_view to);
 private:
 
     struct PairPointerHasher{

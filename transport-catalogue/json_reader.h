@@ -8,6 +8,8 @@
 #include "json_builder.h"
 #include "transport_catalogue.h"
 #include "request_handler.h"
+#include "transport_router.h"
+#include "router.h"
 
 namespace ctlg::jreader {
 
@@ -21,11 +23,14 @@ namespace ctlg::jreader {
         bool IsStopRequest(const json::Dict& req) const;
         bool IsBusRequest(const json::Dict& req) const;
         bool IsMapRequest(const json::Dict& req) const;
+        bool IsRouteRequest(const json::Dict& req) const;
         json::Node GetStopStat(const json::Dict& req) const;
         json::Node GetBusStat(const json::Dict& req) const;
         json::Node GetMapStat(const json::Dict& req) const;
+        json::Node GetRouteStat(const json::Dict& req, const transport_router& tr_router) const;
         std::string GetStats() const;
         RenderSettings GetRendererSettings() const;
+        RoutingSettings GetRoutingSettings() const;
     private:
         RequestHandler& handler_;
         json::Document doc_;

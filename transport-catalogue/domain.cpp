@@ -40,10 +40,32 @@ size_t GetMeters(string_view data){
 }
 
 
-bool Bus::IsRound(){
-    return last_stop_ == nullptr;
+bool Bus::IsRound() const{
+    return is_round_;
 }
 
-Stop* Bus::GetLastStop() {
-    return last_stop_;
+size_t Bus::GetLastStopIndex() const {
+    return stops_.size() / 2;
+}
+
+Stop* Bus::GetLastStop() const {
+    return stops_[GetLastStopIndex()];
+}
+
+bool Bus::IsEndStop(Stop* stop) const{
+    if(IsRound()){
+        return stop == stops_[0];
+    } else {
+        Stop* last_stop = GetLastStop();
+        return stop == stops_[0] || stop == last_stop;
+    }
+}
+
+size_t Bus::GetStopIndex(Stop* stop) const{
+    for(size_t i = 0; i < stops_.size(); ++i){
+        if( stop == stops_[i]){
+            return i;
+        }
+    }
+    throw std::runtime_error("Bus::GetStopIndex: no stop found."s);
 }
