@@ -132,23 +132,6 @@ void TestGraphBuilding0(){
 }
 
 void TestGraphBuilding1(){
-    std::ifstream in{"in1.txt"};
-    TransportCatalogue catalogue;
-    RenderSettings sett;
-    RequestHandler handler{catalogue};
-    ctlg::jreader::JsonReader jreader(handler, in);
-    jreader.ApplyCommands();
-    RoutingSettings rs =  jreader.GetRoutingSettings();
-    transport_router trouter{catalogue, rs};
-    trouter.CreateAllData();
-    auto N = trouter.GetGraphSize();
-    auto graph = trouter.BuildGraph();
-    graph::PrintGraph(graph, N, std::cout);
-    BuildRoute(graph, 0, 8, 7.42, cout);
-    BuildRoute(graph, 0, 12, 11.44, cout);
-    BuildRoute(graph, 4, 12, 10.7, cout);
-    BuildRoute(graph, 4, 0, 8.56, cout);
-    // BuildRoute(graph, 4, 12, 16.32, cout);
 }
 
 

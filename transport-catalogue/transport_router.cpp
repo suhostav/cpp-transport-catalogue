@@ -5,24 +5,24 @@ size_t transport_router::GetStopVertexW(const Stop* stop) const {
 }
 
 size_t transport_router::GetGraphSize(){
-    return all_stops_.size() * 2;
+    return catalogue_.GetAllStops().size() * 2;
 }
 
 void transport_router::CreateStopIndexes(){
     stops_indexes_.clear();
-    for(size_t i = 0; i < all_stops_.size(); ++i){
-        stops_indexes_[&all_stops_[i]] = i;
+    for(size_t i = 0; i < catalogue_.GetAllStops().size(); ++i){
+        stops_indexes_[&catalogue_.GetAllStops()[i]] = i;
     }
 }
 
 transport_router::BusGraph transport_router::BuildGraph() const{
-    const std::deque<Bus>& buses = cat_.GetAllBuses();
+    const std::deque<Bus>& buses = catalogue_.GetAllBuses();
     //i * 2 - вершина начала ожидания wait для остановки i. i * 2 + 1 - вершина остановки после ожидания, и т.д.
     //где i - индекс в all_stops_
-    size_t N = all_stops_.size() * 2;
+    size_t N = catalogue_.GetAllStops().size() * 2;
     BusGraph graph(N);
     //stopW -> stop
-    for(const Stop& stop : all_stops_){
+    for(const Stop& stop : catalogue_.GetAllStops()){
         graph::VertexId vertexW = GetStopVertexW(&stop);
         graph::VertexId vertex = vertexW + 1;
         graph.AddEdge({vertexW, vertex, stop.name_, 0, (double)rs_.bus_wait_time});
@@ -59,7 +59,7 @@ void transport_router::AddRoundBus(const Bus* bus, BusGraph& graph) const{
     for(size_t j = 0; j < bus->stops_.size(); ++j){
         double dist = 0.0;
         for(size_t k = j + 1; k < bus->stops_.size(); ++k){
-            dist += cat_.GetDistance(bus->stops_[k-1], bus->stops_[k]);
+            dist += catalogue_.GetDistance(bus->stops_[k-1], bus->stops_[k]);
             AddRoute(bus, graph, j, k, dist);
         }
     }
@@ -70,14 +70,14 @@ void transport_router::AddPlainBus(const Bus* bus, BusGraph& graph) const{
     for(size_t j = 0; j < last_stop_ind; ++j){
         double dist = 0.0;
         for(size_t k = j + 1; k <= last_stop_ind; ++k){
-            dist += cat_.GetDistance(bus->stops_[k-1], bus->stops_[k]);
+            dist += catalogue_.GetDistance(bus->stops_[k-1], bus->stops_[k]);
             AddRoute(bus, graph, j, k, dist);
         }
     }
     for(size_t j = last_stop_ind; j < bus->stops_.size(); ++j){
         double dist = 0.0;
         for(size_t k = j + 1; k < bus->stops_.size(); ++k){
-            dist += cat_.GetDistance(bus->stops_[k-1], bus->stops_[k]);
+            dist += catalogue_.GetDistance(bus->stops_[k-1], bus->stops_[k]);
             AddRoute(bus, graph, j, k, dist);
         }
     }
@@ -85,8 +85,8 @@ void transport_router::AddPlainBus(const Bus* bus, BusGraph& graph) const{
 
 
 std::optional<transport_router::Route> transport_router::CreateRoute(string_view stop_from, string_view stop_to) const{
-    Stop* from = cat_.GetStop(stop_from);
-    Stop* to = cat_.GetStop(stop_to);
+    Stop* from = catalogue_.GetStop(stop_from);
+    Stop* to = catalogue_.GetStop(stop_to);
     auto route_info = router_->BuildRoute(GetStopVertexW(from),GetStopVertexW(to));
     if(!route_info){
         return {};
